@@ -1,7 +1,7 @@
 # SWAT_BOA
 R scripts for running SWAT and rewriting parameters
 
-In RunAllScripts_SWATv60.5.2 right after line 43 is where I would imagine you pass the parameters from BOA to the R script to have it rewrite the parameters
+In RunAllScripts_SWATv60.5.2 right after line 43 is where I would imagine you pass the parameters from BOA to the R script to have it rewrite the parameters. I noted the range that you could start off with for the two parameters.
 
 Does RunAllScripts_SWATv60.5.2  need to be put on some sort of loop with BOA?
 
