@@ -1,0 +1,210 @@
+### master script to run and look at all model outputs ###
+
+rm(list=ls())
+xlib = c("rstudioapi","here","tictoc","jsonlite","readtext","dplyr","splitstackshape","stringr")
+lapply(xlib, require, character.only=T) ; rm(xlib)
+
+# run SWAT
+setwd(here("TxtInOut"))
+x<-system('SWATPlus_60.5.5.exe') #run SWAT
+
+#if SWAT crashed tell BOA, otherwise continue on to read SWAT outputs  
+setwd(here())
+if (x == 157 | x == 72) {
+  trial_status <- "FAILED"
+  
+  out_data <- list(
+    TrialStatus=unbox(trial_status)
+  )
+  json_data <- toJSON(out_data, pretty = TRUE)
+  write(json_data, "set_trial_status_from_wrapper.json")
+  
+}
+
+# read outputs
+source(here("ReadChannel_daily_StatsOnly.r"))
+
+#writing this after outputs are processed that way BOA can grab the outputs at the same time the model run is complete,
+#or stop if the model run failed
+setwd(here())
+if (x == 0) {
+  trial_status <- "COMPLETED"
+  
+  
+}
+
+
+out_data <- list(
+  TrialStatus=unbox(trial_status)
+)
+json_data <- toJSON(out_data, pretty = TRUE)
+write(json_data, "set_trial_status_from_wrapper.json")
+
+# I assume here is where you might pass back and forth data from BOA?
+# write new params based on outputs
+ p_stl_res1<-10 #Can use range 5-20 to start
+ p_stl_res2<-10
+ p_stl_res3<-10
+ 
+ #n_stl_res1<-5.5
+ #n_stl_res2<-5.5
+ #n_stl_res3<-5.5
+ 
+ sed_stl_res1<-20 #Can use range 10-50
+ sed_stl_res2<-20
+ sed_stl_res3<-20
+
+  ############### READ IN NUTRIENT PARAMETER FILE ##########################
+  
+  tmp <- file(here("TxtInOut",'nutrients.res'))
+  open(tmp, "r") #read
+  
+  #read past headerline and save to rewrite the file
+  topOfFile<-readLines(tmp, n = 2) 
+  
+  #read file 
+  data1<-readLines(tmp, n = -1)
+  
+  
+  close(tmp)
+  headers<-c("name", "mid_start", "mid_end",  "mid_n_stl", "n_stl", "mid_p_stl",  "p_stl",  "chla_co",
+             "secchi_co", "theta_n",  "theta_p", "n_min_stl", "p_min_stl")
+  
+  #read by spacing 
+  DF<-strsplit(data1,split=" ")
+  DF<-lapply(DF, function(z){ z[z != ""]}) 
+  DF<-data.frame(do.call(rbind, DF)) #unlist
+  colnames(DF)<-headers
+  
+  
+  
+  ################# CHANGE RES PARAMS ######################################
+  
+  DF$p_stl[DF$name == "nutres1"]     <- sprintf(p_stl_res1, fmt = '%#.5f')
+  DF$p_stl[DF$name == "nutres2"]     <- sprintf(p_stl_res2, fmt = '%#.5f')
+  DF$p_stl[DF$name == "nutres3"]     <- sprintf(p_stl_res3, fmt = '%#.5f')
+  
+ # DF$n_stl[DF$name == "nutres1"]     <-sprintf(n_stl_res1, fmt = '%#.5f')
+ # DF$n_stl[DF$name == "nutres2"]     <-sprintf(n_stl_res2, fmt = '%#.5f')
+ # DF$n_stl[DF$name == "nutres3"]     <-sprintf(n_stl_res3, fmt = '%#.5f')
+  
+  
+  ################ REWRITE NEW RES PARAMS #################################
+  
+  
+  # convert table to characters and strip of whitespace
+  DF[] <- lapply(DF, as.character)
+  DF <- lapply(DF, str_trim) # keep the first column with the correct spacing
+  
+  
+  spaceOutput<-function(data,nspaces){
+    
+    newData<-paste0(str_dup(" ",(nspaces-nchar(data))),data)
+    return(newData)
+    
+  }
+  
+  spaceOutput_spacesecond<-function(data,nspaces){
+    
+    newData<-paste0(data,str_dup(" ",(nspaces-nchar(data))))
+    return(newData)
+    
+  }
+  
+  
+  
+  #space the first two columns appropriately
+  DF[[1]]<-spaceOutput(DF[[1]],7) 
+  DF[[2]]<-spaceOutput(DF[[2]],19)
+  DF[[3]]<-spaceOutput(DF[[3]],10)
+  
+  #all other columns have 14 spaces
+  for (i in c(4:length(DF))){
+    
+    DF[[i]] <- spaceOutput(DF[[i]],14)
+    
+    
+  }
+  
+  
+  
+  
+  
+  
+  file.remove(here("TxtInOut",'nutrients.res'))
+  
+  sink(here("TxtInOut",'nutrients.res'), type=c("output"), append = T)
+  
+  write(c(topOfFile),here("TxtInOut",'nutrients.res'),sep = "\n",append=T)
+  
+  write(c(paste0(DF[[1]],DF[[2]],DF[[3]],DF[[4]],DF[[5]],DF[[6]],DF[[7]],DF[[8]],DF[[9]],DF[[10]],
+                 DF[[11]],DF[[12]],DF[[13]])),here("TxtInOut",'nutrients.res'),sep="\n",append=T)
+  
+  
+  sink()
+  
+  ############### READ IN SEDIMENT PARAMETER FILE ##########################
+  
+  tmp <- file(here("TxtInOut",'sediment.res'))
+  open(tmp, "r") #read
+  
+  #read past headerline and save to rewrite the file
+  topOfFile<-readLines(tmp, n = 2) 
+  
+  #read file 
+  data1<-readLines(tmp, n = -1)
+  
+  
+  close(tmp)
+  headers<-c("name", "sed_amt",   "d50",  "carbon", "bd", "sed_stl", "stl_vel")
+  
+  #read by spacing 
+  DF<-strsplit(data1,split=" ")
+  DF<-lapply(DF, function(z){ z[z != ""]}) 
+  DF<-data.frame(do.call(rbind, DF)) #unlist
+  colnames(DF)<-headers
+  
+  
+  
+  ################# CHANGE RES PARAMS ######################################
+  
+  DF$stl_vel[DF$name == "sedres1"]     <- sprintf(sed_stl_res1, fmt = '%#.5f')
+  DF$stl_vel[DF$name == "sedres2"]     <- sprintf(sed_stl_res2, fmt = '%#.5f')
+  DF$stl_vel[DF$name == "sedres3"]     <- sprintf(sed_stl_res3, fmt = '%#.5f')
+  
+  
+  
+  ################ REWRITE NEW RES PARAMS #################################
+  
+  
+  # convert table to characters and strip of whitespace
+  DF[] <- lapply(DF, as.character)
+  DF <- lapply(DF, str_trim) # keep the first column with the correct spacing
+  
+  
+  
+  
+  
+  #space the first two columns appropriately
+  DF[[1]]<-spaceOutput(DF[[1]],7) 
+  DF[[2]]<-spaceOutput(DF[[2]],23) 
+  
+  #all other columns have 14 spaces
+  for (i in c(3:length(DF))){
+    
+    DF[[i]] <- spaceOutput(DF[[i]],14)
+    
+    
+  }
+  
+  
+  file.remove(here("TxtInOut",'sediment.res'))
+  
+  sink(here("TxtInOut",'sediment.res'), type=c("output"), append = T)
+  
+  write(c(topOfFile),here("TxtInOut",'sediment.res'),sep = "\n",append=T)
+  
+  write(c(paste0(DF[[1]],DF[[2]],DF[[3]],DF[[4]],DF[[5]],DF[[6]],DF[[7]])),here("TxtInOut",'sediment.res'),sep="\n",append=T)
+  
+  
+  sink()
