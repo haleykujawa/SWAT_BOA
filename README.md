@@ -12,5 +12,5 @@ In the "outputs" folder --> WM_stats contains the performance metrics, I would u
 If it helps you could just pick daily or monthly to start
 
 
-NSE -> the higher the number the better, perfect model = 1
+NSE -> the higher the number the better, perfect model = 1, 
 pbias -> closest to 0 is best
