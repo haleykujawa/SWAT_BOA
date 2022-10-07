@@ -1,0 +1,2 @@
+ ParallelLakes_decHRUfixDE SWAT+ Jun 13 2022    MODULAR Rev 2020.60.5.5                                   
+          hru       year         mon         day     operation   lu_before         lu_after

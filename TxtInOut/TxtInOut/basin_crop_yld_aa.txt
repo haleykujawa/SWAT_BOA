@@ -1,0 +1,2 @@
+ ParallelLakes_decHRUfixDE SWAT+ Jun 13 2022    MODULAR Rev 2020.60.5.5                                   
+       year     plant_no   plant_name       harv_area(ha)    yld(t)         yld(t/ha)      

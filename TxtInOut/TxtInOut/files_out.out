@@ -1,0 +1,8 @@
+ files_out.out - OUTPUT FILES WRITTEN
+ CHK                       checker.out
+ CROP                      crop_yld_aa.txt
+ SWAT-DEG_CHANNEL          channel_sd_day.txt
+ SWAT-DEG_CHANNEL_MORPH    channel_sdmorph_day.txt
+ DTBL                      lu_change_out.txt
+ BASIN_CROP_YLD            basin_crop_yld_yr.txt
+ BASIN_CROP_YLD            basin_crop_yld_aa.txt

@@ -1,0 +1,5 @@
+ ParallelLakes_decHRUfixDE
+  SWAT+ Jun 13 2022    MODULAR Rev 2020.60.5.5                                  
+  
+                                                                            --YIELD (kg/ha)--
+  jday   mon   day    yr    unit PLANTNM                         MASS          C           N           P
